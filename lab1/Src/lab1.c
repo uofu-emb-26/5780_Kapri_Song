@@ -14,11 +14,20 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  while (1)
-  {
- 
+  __HAL_RCC_GPIOC_CLK_ENABLE(); // Enable GPIO clock in the RCC
+
+  //
+  GPIO_InitTypeDef init = {GPIO_PIN_8 | GPIO_PIN_9,
+                           GPIO_MODE_OUTPUT_PP,
+                           GPIO_SPEED_FREQ_LOW,,
+                           GPIO_NOPULL};
+  HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Set PC8 high
+  while (1) {
+    HAL_Delay(200); // Delay 200 ms
+    // Toggle the output state of both PC8 & PC9
+    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
   }
-  return -1;
 }
 
 /**
