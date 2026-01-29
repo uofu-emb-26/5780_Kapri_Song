@@ -22,15 +22,16 @@ int main(void)
   //HAL_RCC_GPIOC_CLK_Enable(); // Enable GPIO clock in the RCC
   __HAL_RCC_GPIOC_CLK_ENABLE();
   assert((RCC->AHBENR & RCC_AHBENR_GPIOCEN)!=0);
-  
+
   //
   GPIO_InitTypeDef initStr = {GPIO_PIN_8 | GPIO_PIN_9,
                            GPIO_MODE_OUTPUT_PP,
                            GPIO_SPEED_FREQ_LOW,
                            GPIO_NOPULL};
-  HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Set PC8 high
+  HAL_GPIO_Init(GPIOC, &initStr); 
   
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Set PC8 high
+  assert((GPIOC->ODR)!=0);
   
   while (1) {
     HAL_Delay(200); // Delay 200 ms
