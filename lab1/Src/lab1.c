@@ -1,5 +1,10 @@
 #include "main.h"
+#include "stm32f072xb.h"
 #include "stm32f0xx_hal.h"
+//#include <assert.h>
+#ifndef assert
+#define assert(condition) do { if (!(condition)) while(1); } while(0)
+#endif
 
 void SystemClock_Config(void);
 
@@ -14,21 +19,33 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  __HAL_RCC_GPIOC_CLK_ENABLE(); // Enable GPIO clock in the RCC
-
+  //HAL_RCC_GPIOC_CLK_Enable(); // Enable GPIO clock in the RCC
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  assert((RCC->AHBENR & RCC_AHBENR_GPIOCEN)!=0);
+  
   //
-  GPIO_InitTypeDef init = {GPIO_PIN_8 | GPIO_PIN_9,
+  GPIO_InitTypeDef initStr = {GPIO_PIN_8 | GPIO_PIN_9,
                            GPIO_MODE_OUTPUT_PP,
-                           GPIO_SPEED_FREQ_LOW,,
+                           GPIO_SPEED_FREQ_LOW,
                            GPIO_NOPULL};
   HAL_GPIO_Init(GPIOC, &initStr); // Initialize pins PC8 & PC9
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET); // Set PC8 high
+  
+  
   while (1) {
     HAL_Delay(200); // Delay 200 ms
     // Toggle the output state of both PC8 & PC9
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
   }
+
+
 }
+
+
+/*
+void HAL_RCC_GPIOC_CLK_Enable(void){
+  RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
+} */
 
 /**
   * @brief System Clock Configuration
