@@ -52,7 +52,7 @@ int main(void)
   while (1) {
     HAL_Delay(200); // Delay 200 ms
 
-    uint32_t prev_ODR = GPIOC->ODR;
+    //uint32_t prev_ODR = GPIOC->ODR;
 
     // Toggle the output state of both PC8 & PC9
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
