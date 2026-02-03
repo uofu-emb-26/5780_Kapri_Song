@@ -39,11 +39,11 @@ int main(void)
 
   // CHECK 3: Verify SPEED is Low (x0)
   // Low speed is usually 00. We check bits 16-19 again.
-  assert((GPIOC->OSPEEDR & 0xF0000) == 0);
+  //assert((GPIOC->OSPEEDR & 0xF0000) == 0);
 
   // CHECK 4: Verify PUPD is No Pull (00)
   // No pull is 00. We check bits 16-19.
-  //assert((GPIOC->PUPDR & 0xF0000) == 0);
+  assert((GPIOC->PUPDR & 0xF0000) == 0);
 
   // --- Sets PC8 High ---
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
