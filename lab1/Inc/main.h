@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 void Error_Handler(void);
+void HAL_RCC_GPIOC_CLK_Enable(void);
 
 #ifdef __cplusplus
 }
