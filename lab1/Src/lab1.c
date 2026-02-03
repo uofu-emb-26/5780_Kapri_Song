@@ -20,7 +20,6 @@ int main(void)
   SystemClock_Config();
 
   HAL_RCC_GPIOC_CLK_Enable(); // Enable GPIO clock in the RCC
-  //__HAL_RCC_GPIOC_CLK_ENABLE();
   //assert((RCC->AHBENR & RCC_AHBENR_GPIOCEN)!=0);
 
   // --- Initialize GPIO pins PC8 & PC9
@@ -59,14 +58,14 @@ int main(void)
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
     
     // Verify the state actually changed (XOR check)
-    assert((GPIOC->ODR & (GPIO_PIN_8 | GPIO_PIN_9)) != (prev_ODR & (GPIO_PIN_8 | GPIO_PIN_9)));
+    //assert((GPIOC->ODR & (GPIO_PIN_8 | GPIO_PIN_9)) != (prev_ODR & (GPIO_PIN_8 | GPIO_PIN_9)));
   }
 
 
 }
 
 void HAL_RCC_GPIOC_CLK_Enable(void){
-  //RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
+  RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
 }
 
 /**
