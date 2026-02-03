@@ -48,18 +48,18 @@ int main(void)
   // --- Sets PC8 High ---
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
   // Verify PC8 is actually High in the Output Data Register (ODR)
-  assert((GPIOC->ODR & GPIO_PIN_8) != 0);
+  //assert((GPIOC->ODR & GPIO_PIN_8) != 0);
   
   while (1) {
     HAL_Delay(200); // Delay 200 ms
 
-    //uint32_t prev_ODR = GPIOC->ODR;
+    uint32_t prev_ODR = GPIOC->ODR;
 
     // Toggle the output state of both PC8 & PC9
     HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
     
     // Verify the state actually changed (XOR check)
-    //assert((GPIOC->ODR & (GPIO_PIN_8 | GPIO_PIN_9)) != (prev_ODR & (GPIO_PIN_8 | GPIO_PIN_9)));
+    assert((GPIOC->ODR & (GPIO_PIN_8 | GPIO_PIN_9)) != (prev_ODR & (GPIO_PIN_8 | GPIO_PIN_9)));
   }
 
 
