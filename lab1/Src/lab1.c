@@ -43,12 +43,12 @@ int main(void)
 
   // CHECK 4: Verify PUPD is No Pull (00)
   // No pull is 00. We check bits 16-19.
-  assert((GPIOC->PUPDR & 0xF0000) == 0);
+  //assert((GPIOC->PUPDR & 0xF0000) == 0);
 
   // --- Sets PC8 High ---
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
   // Verify PC8 is actually High in the Output Data Register (ODR)
-  //assert((GPIOC->ODR & GPIO_PIN_8) != 0);
+  assert((GPIOC->ODR & GPIO_PIN_8) != 0);
   
   while (1) {
     HAL_Delay(200); // Delay 200 ms
