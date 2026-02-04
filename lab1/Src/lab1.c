@@ -1,6 +1,8 @@
 #include "main.h"
+#include "hal_gpio.h"
 #include "stm32f072xb.h"
 #include "stm32f0xx_hal.h"
+#include "stm32f0xx_hal_gpio.h"
 // #include <assert.h>
 #ifndef assert
 #define assert(condition) do { if (!(condition)) while(1); } while(0)
@@ -23,11 +25,11 @@ int main(void)
   //assert((RCC->AHBENR & RCC_AHBENR_GPIOCEN)!=0);
 
   // --- Initialize GPIO pins PC8 & PC9
-  GPIO_InitTypeDef initStr = {GPIO_PIN_8 | GPIO_PIN_9,
+  GPIO_InitTypeDef initStr = {GPIO_PIN_6 | GPIO_PIN_7,
                            GPIO_MODE_OUTPUT_PP,
                            GPIO_SPEED_FREQ_LOW,
                            GPIO_NOPULL};
-  HAL_GPIO_Init(GPIOC, &initStr); 
+  My_HAL_GPIO_Init(GPIOC, &initStr); 
   // CHECK 1: Verify MODE is Output (01) for Pin 8 (bits 17:16) and Pin 9 (bits 19:18)
   // Mask 0xF0000 isolates bits 19-16. Expected '0101' is 0x5.
   //assert((GPIOC->MODER & 0xF0000) == 0x50000);
@@ -44,8 +46,11 @@ int main(void)
   // No pull is 00. We check bits 16-19.
   //assert((GPIOC->PUPDR & 0xF0000) == 0);
 
+
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
+
   // --- Sets PC8 High ---
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
   // Verify PC8 is actually High in the Output Data Register (ODR)
   //assert((GPIOC->ODR & GPIO_PIN_8) != 0);
   
@@ -55,7 +60,7 @@ int main(void)
     //uint32_t prev_ODR = GPIOC->ODR;
 
     // Toggle the output state of both PC8 & PC9
-    HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8 | GPIO_PIN_9);
+    My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
     
     // Verify the state actually changed (XOR check)
     //assert((GPIOC->ODR & (GPIO_PIN_8 | GPIO_PIN_9)) != (prev_ODR & (GPIO_PIN_8 | GPIO_PIN_9)));
@@ -130,3 +135,5 @@ void assert_failed(uint8_t *file, uint32_t line)
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 }
 #endif /* USE_FULL_ASSERT */
+
+

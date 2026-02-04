@@ -6,17 +6,17 @@ void My_HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 {
     if (GPIOx == GPIOC) {
         // MODER: (01) General purpose output mode
-        GPIOC->MODER &= ~(0xF << 16); // clear bits Pin8 & Pin9 (16-19)
-        GPIOC->MODER |= (0x5 << 16);
+        GPIOC->MODER &= ~(0xF << 12); // clear bits Pin6 & Pin7
+        GPIOC->MODER |= (0x5 << 12);
 
         // OTYPER: (0) Push-pull output type
-        GPIOC->OTYPER &= ~(GPIO_PIN_8 | GPIO_PIN_9);
+        GPIOC->OTYPER &= ~(GPIO_PIN_6 | GPIO_PIN_7);
 
         // OSPEEDR: (x0) Low speed
-        GPIOC->OSPEEDR &= ~(0xF << 16);
+        GPIOC->OSPEEDR &= ~(0xF << 12);
 
         // PUPDR: no pull-up/pull-down resistors
-        GPIOC->PUPDR &= ~(0xF << 16);
+        GPIOC->PUPDR &= ~(0xF << 12);
     } /*
     if (GPIOx == GPIOA) {
         // MODER: (00) Digital input mode
@@ -54,9 +54,8 @@ void My_HAL_GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState 
         GPIOx->BSRR = (uint32_t)GPIO_Pin << 16; // Turn off: upper half of BSRR to reset pin
 }
 
-
-/*
 void My_HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
+    GPIOx->ODR ^= GPIO_Pin;
 }
-*/
+
