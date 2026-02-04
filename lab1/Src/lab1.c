@@ -30,6 +30,7 @@ int main(void)
                            GPIO_MODE_OUTPUT_PP,
                            GPIO_SPEED_FREQ_LOW,
                            GPIO_NOPULL};
+
   My_HAL_GPIO_Init(GPIOC, &initStr); 
   // CHECK 1: Verify MODE is Output (01) for Pin 8 (bits 17:16) and Pin 9 (bits 19:18)
   // Mask 0xF0000 isolates bits 19-16. Expected '0101' is 0x5.
@@ -47,6 +48,12 @@ int main(void)
   // No pull is 00. We check bits 16-19.
   //assert((GPIOC->PUPDR & 0xF0000) == 0);
 
+  GPIO_InitTypeDef initBtn = {GPIO_PIN_0,
+                           GPIO_MODE_INPUT,
+                           GPIO_SPEED_FREQ_LOW,
+                           GPIO_PULLDOWN};
+  My_HAL_GPIO_Init(GPIOA, &initBtn);
+
 
   My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 
@@ -55,14 +62,32 @@ int main(void)
   // Verify PC8 is actually High in the Output Data Register (ODR)
   //assert((GPIOC->ODR & GPIO_PIN_8) != 0);
   
+  uint32_t debouncer = 0;
   while (1) {
+    // Read the button state
+        if (My_HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == GPIO_PIN_SET) {
+            debouncer++;
+        } else {
+            debouncer = 0;
+        }
+
+        // If button is held for enough cycles, consider it a press
+        if (debouncer == 5) { // Threshold value
+             My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
+        }
+
+        // Delay to prevent CPU from running too fast (Debounce timing)
+        HAL_Delay(10);
+
+
+/*
     HAL_Delay(200); // Delay 200 ms
 
     //uint32_t prev_ODR = GPIOC->ODR;
 
     // Toggle the output state of both PC8 & PC9
     My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
-    
+    */
     // Verify the state actually changed (XOR check)
     //assert((GPIOC->ODR & (GPIO_PIN_8 | GPIO_PIN_9)) != (prev_ODR & (GPIO_PIN_8 | GPIO_PIN_9)));
   }
