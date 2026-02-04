@@ -22,6 +22,7 @@ int main(void)
   SystemClock_Config();
 
   HAL_RCC_GPIOC_CLK_Enable(); // Enable GPIO clock in the RCC
+  HAL_RCC_GPIOA_CLK_Enable();
   //assert((RCC->AHBENR & RCC_AHBENR_GPIOCEN)!=0);
 
   // --- Initialize GPIO pins PC8 & PC9
@@ -73,6 +74,9 @@ void HAL_RCC_GPIOC_CLK_Enable(void){
   RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
 }
 
+void HAL_RCC_GPIOA_CLK_Enable(void){
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+}
 /**
   * @brief System Clock Configuration
   * @retval None

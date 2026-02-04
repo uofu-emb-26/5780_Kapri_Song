@@ -17,8 +17,8 @@ void My_HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 
         // PUPDR: no pull-up/pull-down resistors
         GPIOC->PUPDR &= ~(0xF << 12);
-    } /*
-    if (GPIOx == GPIOA) {
+    }
+    else if (GPIOx == GPIOA) {
         // MODER: (00) Digital input mode
         GPIOA->MODER &= ~(0x3); // binary
 
@@ -28,7 +28,7 @@ void My_HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         // PUPDR: (10) Pull-down resister
         GPIOA->PUPDR &= ~(0x3);
         GPIOA->PUPDR |= 0x2;
-    }*/
+    }
 }
 
 
@@ -38,12 +38,15 @@ void My_HAL_GPIO_DeInit(GPIO_TypeDef  *GPIOx, uint32_t GPIO_Pin)
 }
 */
 
-/*
+
 GPIO_PinState My_HAL_GPIO_ReadPin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
-    return -1;
+    if((GPIOx->IDR & GPIO_Pin) != 0) // GPIO_Pin is there, set to IDR
+        return GPIO_PIN_SET; // Button Pressed (High)
+    else
+        return GPIO_PIN_RESET; // Released (Low)
 }
-*/
+
 
 
 void My_HAL_GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState PinState)
