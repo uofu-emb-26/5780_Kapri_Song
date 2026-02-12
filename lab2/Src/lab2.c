@@ -57,6 +57,8 @@ assert((EXTI->RTSR & EXTI_RTSR_TR0) == EXTI_RTSR_TR0);*/
   NVIC_EnableIRQ(EXTI0_1_IRQn); 
   // Set Priority to 1 (High Priority) 
   NVIC_SetPriority(EXTI0_1_IRQn, 1);
+  
+  NVIC_SetPriority(SysTick_IRQn, 0);
 
   while (1)
   {
@@ -124,10 +126,16 @@ void Error_Handler(void)
  */
 void EXTI0_1_IRQHandler(void)
 {
-    // 1. Toggle Green (PC9) and Orange (PC8) LEDs
+    // Toggle Green (PC9) and Orange (PC8) LEDs
     My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
     My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
 
+    // Delay 1-2 sec
+    for (volatile uint32_t i = 0; i < 1500000; i++);
+
+    // Signal End of delay
+    My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+    My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
     // 2. Clear the EXTI Pending Flag for Line 0
     // The manual notes that these bits require a "different action" to clear .
     // For the EXTI Pending Register (PR), writing a '1' to the bit CLEARS it.
