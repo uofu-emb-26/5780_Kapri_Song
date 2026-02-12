@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stm32f0xx_hal.h>
 #include <stm32f0xx_hal_gpio.h>
+#include <stm32f0xx_it.h>
 
 void My_HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 {
@@ -64,3 +65,14 @@ void My_HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
     GPIOx -> ODR ^= GPIO_Pin;
 }
 
+void Enable_EXTI_Button(void) {
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+    SYSCFG->EXTICR[0] &= ~(SYSCFG_EXTICR1_EXTI0); // Clear existing setting
+    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI0_PA; // Set for Port A
+    
+    EXTI->IMR |= EXTI_IMR_MR0;
+    
+    EXTI->RTSR |= EXTI_RTSR_TR0;
+
+    EXTI->FTSR &= ~EXTI_FTSR_TR0;
+}

@@ -61,3 +61,21 @@ void My_HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
     GPIOx->ODR ^= GPIO_Pin;
 }
+
+void Enable_EXTI_Button(void) {
+    // 1. Enable SYSCFG Clock (Required before touching SYSCFG registers)
+    __HAL_RCC_SYSCFG_CLK_ENABLE();
+
+    // 2. Connect Port A to EXTI Line 0
+    SYSCFG->EXTICR[0] &= ~(SYSCFG_EXTICR1_EXTI0); // Clear existing setting
+    SYSCFG->EXTICR[0] |= SYSCFG_EXTICR1_EXTI0_PA; // Set for Port A
+
+    // 3. Unmask (Enable) Interrupt on Line 0 (You already had this)
+    EXTI->IMR |= EXTI_IMR_MR0;
+
+    // 4. Enable Rising Edge Trigger for Line 0 (You already had this)
+    EXTI->RTSR |= EXTI_RTSR_TR0;
+    
+    // Disable Falling Edge
+    EXTI->FTSR &= ~EXTI_FTSR_TR0;
+}

@@ -3,6 +3,11 @@
 #include "hal_gpio.h"
 #include "stm32f072xb.h"
 #include "stm32f0xx_hal_gpio.h"
+#include "stm32f0xx_hal_rcc.h"
+#include <stdint.h>
+#ifndef assert
+#define assert(condition) do { if (!(condition)) while(1); } while(0)
+#endif
 
 void SystemClock_Config(void);
 
@@ -30,7 +35,17 @@ int main(void)
                           GPIO_SPEED_FREQ_LOW,
                           GPIO_PULLDOWN};
   My_HAL_GPIO_Init(GPIOA, &initBtn);
+  assert((SYSCFG->EXTICR[0] & SYSCFG_EXTICR1_EXTI0) == 0);
+  //assert((EXTI->IMR & EXTI_IMR_MR0) == 0);
+  //assert((EXTI->RTSR & EXTI_RTSR_TR0) == 0);
+  Enable_EXTI_Button();
 
+  uint32_t val = SYSCFG->EXTICR[0] & SYSCFG_EXTICR1_EXTI0;
+  assert(val == SYSCFG_EXTICR1_EXTI0_PA);
+  
+  /*
+  assert((EXTI->IMR & EXTI_IMR_MR0) == EXTI_IMR_MR0);
+assert((EXTI->RTSR & EXTI_RTSR_TR0) == EXTI_RTSR_TR0);*/
   // Sets PC9 high
   My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 
@@ -38,6 +53,11 @@ int main(void)
   SystemClock_Config();
   //uint32_t time = 0;
   
+  // Enable the EXTI0_1 Interrupt in the NVIC
+  NVIC_EnableIRQ(EXTI0_1_IRQn); 
+  // Set Priority to 1 (High Priority) 
+  NVIC_SetPriority(EXTI0_1_IRQn, 1);
+
   while (1)
   {
     My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
@@ -98,6 +118,20 @@ void Error_Handler(void)
   {
     
   }
+}
+/**
+ * @brief  EXTI Line 0 and 1 Interrupt Handler
+ */
+void EXTI0_1_IRQHandler(void)
+{
+    // 1. Toggle Green (PC9) and Orange (PC8) LEDs
+    My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_8);
+    My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+
+    // 2. Clear the EXTI Pending Flag for Line 0
+    // The manual notes that these bits require a "different action" to clear .
+    // For the EXTI Pending Register (PR), writing a '1' to the bit CLEARS it.
+    EXTI->PR |= EXTI_PR_PR0; 
 }
 
 #ifdef USE_FULL_ASSERT
