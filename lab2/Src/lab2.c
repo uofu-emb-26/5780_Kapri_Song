@@ -53,12 +53,24 @@ assert((EXTI->RTSR & EXTI_RTSR_TR0) == EXTI_RTSR_TR0);*/
   SystemClock_Config();
   //uint32_t time = 0;
   
+  /*2.6 Lab
   // Enable the EXTI0_1 Interrupt in the NVIC
   NVIC_EnableIRQ(EXTI0_1_IRQn); 
   // Set Priority to 1 (High Priority) 
   NVIC_SetPriority(EXTI0_1_IRQn, 1);
   
   NVIC_SetPriority(SysTick_IRQn, 0);
+  */
+
+  /*2.7-1 Lab
+  NVIC_SetPriority(EXTI0_1_IRQn, 1);
+  NVIC_EnableIRQ(EXTI0_1_IRQn);
+  NVIC_SetPriority(SysTick_IRQn, 2);
+*/
+  /*2.7-2 Lab*/
+  NVIC_SetPriority(EXTI0_1_IRQn, 3); 
+  NVIC_EnableIRQ(EXTI0_1_IRQn);
+  NVIC_SetPriority(SysTick_IRQn, 2);
 
   while (1)
   {
