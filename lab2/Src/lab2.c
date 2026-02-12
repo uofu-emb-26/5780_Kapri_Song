@@ -1,5 +1,8 @@
 #include "main.h"
 #include "stm32f0xx_hal.h"
+#include "hal_gpio.h"
+#include "stm32f072xb.h"
+#include "stm32f0xx_hal_gpio.h"
 
 void SystemClock_Config(void);
 
@@ -11,12 +14,39 @@ int main(void)
 {
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  GPIO_InitTypeDef initStr = {GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, 
+                          GPIO_MODE_OUTPUT_PP,
+                          GPIO_SPEED_FREQ_LOW,
+                          GPIO_NOPULL};
+  My_HAL_GPIO_Init(GPIOC, &initStr);
+
+
+  GPIO_InitTypeDef initBtn = {GPIO_PIN_0,
+                          GPIO_MODE_INPUT,
+                          GPIO_SPEED_FREQ_LOW,
+                          GPIO_PULLDOWN};
+  My_HAL_GPIO_Init(GPIOA, &initBtn);
+
+  // Sets PC9 high
+  My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
+
   /* Configure the system clock */
   SystemClock_Config();
-
+  //uint32_t time = 0;
+  
   while (1)
   {
- 
+    My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+    HAL_Delay(500);
+    /*if ((HAL_GetTick() - time) >= 500U) {
+      time = HAL_GetTick();
+      My_HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_6);
+      // HAL_Delay(500);
+    }*/
   }
   return -1;
 }
@@ -66,6 +96,7 @@ void Error_Handler(void)
   __disable_irq();
   while (1)
   {
+    
   }
 }
 

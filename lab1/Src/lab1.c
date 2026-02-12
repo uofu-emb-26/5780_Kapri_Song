@@ -54,7 +54,6 @@ int main(void)
                            GPIO_PULLDOWN};
   My_HAL_GPIO_Init(GPIOA, &initBtn);
 
-
   My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_SET);
 
   // --- Sets PC8 High ---

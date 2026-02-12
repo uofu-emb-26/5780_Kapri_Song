@@ -4,23 +4,21 @@
 
 void My_HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
 {
-    if(GPIOx == GPIOA) __HAL_RCC_GPIOA_CLK_ENABLE();
-    if(GPIOx == GPIOC) __HAL_RCC_GPIOC_CLK_ENABLE();
-
     if (GPIOx == GPIOC) {
         // MODER: (01) General purpose output mode
-        GPIOC->MODER &= ~(0xF << 12); // clear bits Pin6 & Pin7
-        GPIOC->MODER |= (0x5 << 12);
+        GPIOC->MODER &= ~(0xFF << 12); // clear bits Pin6 & Pin7
+        GPIOC->MODER |= (0x55 << 12);
 
         // OTYPER: (0) Push-pull output type
-        GPIOC->OTYPER &= ~(GPIO_PIN_6 | GPIO_PIN_7);
+        GPIOC->OTYPER &= ~(GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9);
 
         // OSPEEDR: (x0) Low speed
-        GPIOC->OSPEEDR &= ~(0xF << 12);
+        GPIOC->OSPEEDR &= ~(0xFF << 12);
+
         // PUPDR: no pull-up/pull-down resistors
-        GPIOC->PUPDR &= ~(0xF << 12);
+        GPIOC->PUPDR &= ~(0xFF << 12);
     }
-    else if (GPIOx == GPIOA) {
+    /*else if (GPIOx == GPIOA) {
         // MODER: (00) Digital input mode
         GPIOA->MODER &= ~(0x3); // binary
 
@@ -30,7 +28,7 @@ void My_HAL_GPIO_Init(GPIO_TypeDef  *GPIOx, GPIO_InitTypeDef *GPIO_Init)
         // PUPDR: (10) Pull-down resister
         GPIOA->PUPDR &= ~(0x3);
         GPIOA->PUPDR |= 0x2;
-    }
+    } */
 }
 
 
@@ -61,6 +59,5 @@ void My_HAL_GPIO_WritePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin, GPIO_PinState 
 
 void My_HAL_GPIO_TogglePin(GPIO_TypeDef* GPIOx, uint16_t GPIO_Pin)
 {
-    GPIOx -> ODR ^= GPIO_Pin;
+    GPIOx->ODR ^= GPIO_Pin;
 }
-

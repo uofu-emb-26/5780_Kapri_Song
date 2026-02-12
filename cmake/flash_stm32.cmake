@@ -1,7 +1,7 @@
 function(flash_target target)
     find_program(OPENOCD openocd)
     if (OPENOCD)
-        add_custom_target(flash_${target} ${OPENOCD} -f interface/stlink.cfg -f target/stm32f0x.cfg -c 'program "$<TARGET_FILE:${target}>" verify reset exit' DEPENDS ${target})
+        add_custom_target(flash_${target} ${OPENOCD} -f interface/stlink-v2.cfg -f target/stm32f0x.cfg -c 'program "$<TARGET_FILE:${target}>" verify reset exit' DEPENDS ${target})
     else()
         find_program(CUBE cube)
         if (CUBE)
