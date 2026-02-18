@@ -1,8 +1,7 @@
 #include "main.h"
 #include "stm32f0xx_hal.h"
+#include "stm32f0xx_hal_gpio.h"
 #include "timers.h"
-
-void SystemClock_Config(void);
 
 /**
   * @brief  The application entry point.
@@ -12,6 +11,7 @@ int main(void)
 {
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
+  void SystemClock_Config(void);
 
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE(); 
@@ -21,15 +21,17 @@ int main(void)
                           GPIO_SPEED_FREQ_LOW,
                           GPIO_NOPULL};
   HAL_GPIO_Init(GPIOC, &initStr);
+  PWM_Pins_Init();
 
   // Sets PC8 high
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
   // Sets PC9 low
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
+  
 
   TIM2_Init();
+  TIM3_Init();
 
-  NVIC_EnableIRQ(TIM2_IRQn);
   /* Configure the system clock */
   SystemClock_Config();
 

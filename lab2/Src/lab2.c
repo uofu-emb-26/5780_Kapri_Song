@@ -45,7 +45,7 @@ int main(void)
   
   /*
   assert((EXTI->IMR & EXTI_IMR_MR0) == EXTI_IMR_MR0);
-assert((EXTI->RTSR & EXTI_RTSR_TR0) == EXTI_RTSR_TR0);*/
+  assert((EXTI->RTSR & EXTI_RTSR_TR0) == EXTI_RTSR_TR0);*/
   // Sets PC9 high
   My_HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);
 
