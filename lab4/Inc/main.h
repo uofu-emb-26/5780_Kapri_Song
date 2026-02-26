@@ -5,8 +5,11 @@
 extern "C" {
 #endif
 
+void USART_Init(void);
 void Error_Handler(void);
-
+void USART_TransChar(char);
+void USART_TransString(char*);
+char USART_ReceiveChar(void);
 #ifdef __cplusplus
 }
 #endif

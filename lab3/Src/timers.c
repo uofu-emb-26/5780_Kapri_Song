@@ -59,21 +59,21 @@ void TIM2_IRQHandler(){
 }
 
 void PWM_Pins_Init(void) {
-    // 1. Enable GPIOC Clock (Just in case it isn't enabled yet)
+    // Enable GPIOC Clock
     RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
 
-    // 2. Configure PC6 and PC7 to Alternate Function Mode (Binary '10')
+    // Configure PC6 and PC7 to Alternate Function Mode (10)
     // Pin 6 uses bits 13:12, Pin 7 uses bits 15:14 in the MODER register
     GPIOC->MODER &= ~((3 << 12) | (3 << 14)); // Clear the bits first
     GPIOC->MODER |=  ((2 << 12) | (2 << 14)); // Set to 10 (AF mode)
 
-    // 3. Select the specific Alternate Function (AF0)
+    // Select the specific Alternate Function (AF0)
     // The AFR array has two registers: 
     // AFR[0] is AFRL (Pins 0-7)
     // AFR[1] is AFRH (Pins 8-15)
-    // Since we are using Pins 6 and 7, we use AFR[0].
+    // Since we are using Pins 6 and 7, use AFR[0]
     
-    // Pin 6 uses bits 27:24, Pin 7 uses bits 31:28.
-    // Because we need AF0 (which is value 0x0), we simply clear the bits to 0.
+    // Pin 6 uses bits 27:24, Pin 7 uses bits 31:28
+    // Need AF0, clear the bits to 0.
     GPIOC->AFR[0] &= ~((0xF << 24) | (0xF << 28)); 
 }
