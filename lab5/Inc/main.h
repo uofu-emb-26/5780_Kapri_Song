@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+void I2C_Init(void);
 void Error_Handler(void);
 
 #ifdef __cplusplus

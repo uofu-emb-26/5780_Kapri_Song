@@ -1,4 +1,5 @@
 #include "main.h"
+#include "stm32f072xb.h"
 #include "stm32f0xx_hal.h"
 
 void SystemClock_Config(void);
@@ -14,11 +15,181 @@ int main(void)
   /* Configure the system clock */
   SystemClock_Config();
 
-  while (1)
-  {
- 
+  I2C_Init();
+
+  HAL_Delay(10);
+
+  // 5.4 Set the transaction parameters in CR2 for a WRITE operation
+  I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0)); // Clear the NBYTES and SADD bit fields using bitwise masking
+  
+  // Set SADD = 0x69 (shifted by 1 for 7-bit address format), NBYTES = 2
+  I2C2->CR2 |= (2 << 16) | (0x69 << 1); 
+  I2C2->CR2 &= ~I2C_CR2_RD_WRN; // Clear to indicate a WRITE operation
+  I2C2->CR2 |= I2C_CR2_START; // Set the START bit
+
+  // 2. Wait until either the TXIS or NACKF flag is set
+  while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF))) {}
+  I2C2->TXDR = 0x20; // 0x20: CRTL_REG1 register address
+  /*
+  // Check if NACKF is set here to catch wiring errors
+  if (I2C2->ISR & I2C_ISR_NACKF) {
+      // Turn on the RED LED (PC6) to indicate an I2C error
+      GPIOC->ODR |= (1 << 6);         // Turn on Red LED
+      while(1){}                      // Halt execution here for debugging
+  }*/
+
+  // 3. Write the address of the "WHO_AM_I" register (0x0F) into the TXDR
+  while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF))) {}
+  I2C2->TXDR = 0x0B; // Enable X and Y sensing axes, set PD to 1 (normal mode) in CTRL_REG1
+
+  // 4. Wait until the TC (Transfer Complete) flag is set
+  while (!(I2C2->ISR & I2C_ISR_TC)) {}
+  I2C2->CR2 |= I2C_CR2_STOP;
+
+  // 5. Reload the CR2 register to perform a READ operation (Restart condition)
+  // Clear NBYTES and SADD bit fields again
+  I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0));
+  
+  // Set SADD = 0x69 (shifted by 1), NBYTES = 1
+  // Set RD_WRN to indicate a READ operation, and set the START bit
+  I2C2->CR2 |= (1 << 16) | (0x69 << 1); // NBYTES = 2 (Address + Data)
+  I2C2->CR2 |= I2C_CR2_RD_WRN; 
+  I2C2->CR2 |= I2C_CR2_START;
+
+  // 6. Wait until either the RXNE or NACKF flag is set
+  while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF))) {}
+  I2C2->TXDR = 0x0F;
+  while (!(I2C2->ISR & I2C_ISR_TC)) {}
+
+  // Restart & read 1 byte
+  I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0));
+  I2C2->CR2 |= (1 << 16) | (0x69 << 1);
+  I2C2->CR2 |= I2C_CR2_RD_WRN;
+  I2C2->CR2 |= I2C_CR2_START;
+
+  
+  while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF))) {}
+  /*
+  // 7. Wait until the TC (Transfer Complete) flag is set
+  while (!(I2C2->ISR & I2C_ISR_TC)) {}
+*/
+  // 8. Read the contents of the RXDR register
+  volatile uint8_t who_am_i = I2C2->RXDR;
+  while (!(I2C2->ISR & I2C_ISR_TC)) {}
+  I2C2->CR2 |= I2C_CR2_STOP;
+
+  // Check if it matches the expected value of 0xD4
+  if (who_am_i == 0xD3) {
+      // The sensor is communicating correctly.
+      GPIOC->ODR |= (1 << 9); // Blue LED PC9
+  } else {
+    GPIOC->ODR |= (1 << 7); // Green LED PC6
   }
+
+  // 9. Set the STOP bit in the CR2 register to release the I2C bus
+  I2C2->CR2 |= I2C_CR2_STOP;
+
+
+  // 5.6
+  while (1) {
+    HAL_Delay(100); // Read every 100 ms 
+
+    // --- Phase 1: Write starting register address with auto-increment bit ---
+    I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0));
+    I2C2->CR2 |= (1 << 16) | (0x69 << 1); 
+    I2C2->CR2 &= ~I2C_CR2_RD_WRN; 
+    I2C2->CR2 |= I2C_CR2_START;
+
+    while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF))) {}
+    I2C2->TXDR = 0xA8; // Address 0x28 with MSB set 
+    while (!(I2C2->ISR & I2C_ISR_TC)) {}
+
+    // --- Phase 2: Read 4 consecutive data bytes (X and Y axes) ---
+    I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0));
+    I2C2->CR2 |= (4 << 16) | (0x69 << 1); // NBYTES = 4 [cite: 168]
+    I2C2->CR2 |= I2C_CR2_RD_WRN; 
+    I2C2->CR2 |= I2C_CR2_START;
+
+    uint8_t data[4];
+    for(int i = 0; i < 4; i++) {
+        while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF))) {}
+        data[i] = I2C2->RXDR;
+    }
+    while (!(I2C2->ISR & I2C_ISR_TC)) {}
+    I2C2->CR2 |= I2C_CR2_STOP;
+
+    // --- Phase 3: Data assembly and LED Logic ---
+    // Combine 8-bit registers into 16-bit signed integers [cite: 363, 493]
+    int16_t x_val = (int16_t)((data[1] << 8) | data[0]);
+    int16_t y_val = (int16_t)((data[3] << 8) | data[2]);
+
+    // Clear LEDs and apply threshold to ignore noise [cite: 495]
+    GPIOC->ODR &= ~((1 << 6) | (1 << 7) | (1 << 8) | (1 << 9));
+    int threshold = 500; 
+
+    // Map axes to specific LEDs per board orientation [cite: 496, 497]
+    if (x_val > threshold)       GPIOC->ODR |= (1 << 8); // Orange (Positive X)
+    else if (x_val < -threshold)  GPIOC->ODR |= (1 << 9); // Blue (Negative X)
+
+    if (y_val > threshold)       GPIOC->ODR |= (1 << 6); // Red (Positive Y)
+    else if (y_val < -threshold)  GPIOC->ODR |= (1 << 7); // Green (Negative Y)
+}
   return -1;
+}
+
+
+void I2C_Init(void)
+{
+  // Enable GPIOC & GPIOB clock
+  RCC->AHBENR |= RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOCEN;
+
+
+  // Configure PC6 (Red), PC7 (Green), PC8 (Orange), PC9 (Blue) as Outputs
+  GPIOC->MODER &= ~((3 << (6 * 2)) | (3 << (7 * 2)) | (3 << (8 * 2)) | (3 << (9 * 2))); 
+  GPIOC->MODER |=  ((1 << (6 * 2)) | (1 << (7 * 2)) | (1 << (8 * 2)) | (1 << (9 * 2)));
+
+  // Set PB11 & PB13 to AF mode as I2C2_SDA
+  GPIOB->MODER &= ~((3 << (11*2)) | (3 << (13 * 2))); // Clears bit before setting
+  GPIOB->MODER |= ((2 << (11*2)) | (2 << (13*2))); // Set to AF mode (10)
+  // Set to open-drain output type (1)
+  GPIOB->OTYPER |= (1 << 11) | (1 << 13);
+  // Select the correct AF for I2C2 on PB11 and PB13
+  GPIOB->AFR[1] &= ~((0xF << ((11 - 8) * 4)) | (0xF << ((13 - 8) * 4)));
+  GPIOB->AFR[1] |=  ((1 << ((11 - 8) * 4)) | (5 << ((13 - 8) * 4))); // AF5
+
+  // Enable internal pull-ups for PB11 and PB13 (01 in PUPDR)
+  GPIOB->PUPDR &= ~((3 << (11 * 2)) | (3 << (13 * 2)));
+  GPIOB->PUPDR |=  ((1 << (11 * 2)) | (1 << (13 * 2)));
+
+  // Set PB14 (I2C address control) as Push-Pull Output, set High
+  GPIOB->MODER &= ~(3 << (14 * 2));
+  GPIOB->MODER |=  (1 << (14 * 2)); // Output mode
+  GPIOB->OTYPER &= ~(1 << 14);      // Push-pull (default)
+  GPIOB->ODR |= (1 << 14);          // Initialize high
+
+  // Set PC0 (SPI/I2C mode select) as Push-Pull Output, set High
+  GPIOC->MODER &= ~(3 << (0 * 2));
+  GPIOC->MODER |=  (1 << (0 * 2));  // Output mode
+  GPIOC->OTYPER &= ~(1 << 0);       // Push-pull (default)
+  GPIOC->ODR |= (1 << 0);           // Initialize high
+
+  // Set PB15 to Input mode (00 in MODER)
+  GPIOB->MODER &= ~(3 << (15 * 2)); // Clears bits 31:30 to set as Input
+
+
+  // 5.3 Enable clock for I2C2
+  RCC->APB1ENR |= RCC_APB1ENR_I2C2EN;
+
+  // Configure I2C2 TIMINGR for 100 kHz standard-mode (8MHz clock)
+  // PRESC = 1, SCLDEL = 0x4, SDADEL = 0x2, SCLH = 0xC3, SCLL = 0xC7
+  I2C2->TIMINGR = (1 << 28) | (0x4 << 20) | (0x2 << 16) | (0xC3 << 8) | (0xC7 << 0);
+
+  // Enable the I2C2 peripheral using PC bit in CR1 reg
+  I2C2->CR1 |= I2C_CR1_PE;
+
+
+
+  // 
 }
 
 /**
