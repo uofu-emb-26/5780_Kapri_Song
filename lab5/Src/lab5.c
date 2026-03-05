@@ -14,66 +14,42 @@ int main(void)
   HAL_Init();
   /* Configure the system clock */
   SystemClock_Config();
-
   I2C_Init();
-
   HAL_Delay(10);
 
   // 5.4 Set the transaction parameters in CR2 for a WRITE operation
   I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0)); // Clear the NBYTES and SADD bit fields using bitwise masking
   
-  // Set SADD = 0x69 (shifted by 1 for 7-bit address format), NBYTES = 2
+  // Set SADD = 0x69 (shifted by 1 for 7-bit address format), NBYTES = 1
   I2C2->CR2 |= (2 << 16) | (0x69 << 1); 
-  I2C2->CR2 &= ~I2C_CR2_RD_WRN; // Clear to indicate a WRITE operation
+  I2C2->CR2 &= ~I2C_CR2_RD_WRN;
   I2C2->CR2 |= I2C_CR2_START; // Set the START bit
 
   // 2. Wait until either the TXIS or NACKF flag is set
   while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF))) {}
   I2C2->TXDR = 0x20; // 0x20: CRTL_REG1 register address
-  /*
-  // Check if NACKF is set here to catch wiring errors
-  if (I2C2->ISR & I2C_ISR_NACKF) {
-      // Turn on the RED LED (PC6) to indicate an I2C error
-      GPIOC->ODR |= (1 << 6);         // Turn on Red LED
-      while(1){}                      // Halt execution here for debugging
-  }*/
-
-  // 3. Write the address of the "WHO_AM_I" register (0x0F) into the TXDR
   while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF))) {}
-  I2C2->TXDR = 0x0B; // Enable X and Y sensing axes, set PD to 1 (normal mode) in CTRL_REG1
-
-  // 4. Wait until the TC (Transfer Complete) flag is set
+  I2C2->TXDR = 0x0B;
   while (!(I2C2->ISR & I2C_ISR_TC)) {}
   I2C2->CR2 |= I2C_CR2_STOP;
 
-  // 5. Reload the CR2 register to perform a READ operation (Restart condition)
-  // Clear NBYTES and SADD bit fields again
-  I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0));
-  
-  // Set SADD = 0x69 (shifted by 1), NBYTES = 1
-  // Set RD_WRN to indicate a READ operation, and set the START bit
-  I2C2->CR2 |= (1 << 16) | (0x69 << 1); // NBYTES = 2 (Address + Data)
-  I2C2->CR2 |= I2C_CR2_RD_WRN; 
+  // Read 0x0F
+  I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0)); 
+  I2C2->CR2 |= (1 << 16) | (0x69 << 1); 
+  I2C2->CR2 &= ~I2C_CR2_RD_WRN; // READ
   I2C2->CR2 |= I2C_CR2_START;
 
-  // 6. Wait until either the RXNE or NACKF flag is set
-  while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF))) {}
+  while (!(I2C2->ISR & (I2C_ISR_TXIS | I2C_ISR_NACKF))) {}
   I2C2->TXDR = 0x0F;
   while (!(I2C2->ISR & I2C_ISR_TC)) {}
 
-  // Restart & read 1 byte
-  I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0));
-  I2C2->CR2 |= (1 << 16) | (0x69 << 1);
-  I2C2->CR2 |= I2C_CR2_RD_WRN;
+  I2C2->CR2 &= ~((0xFF << 16) | (0x3FF << 0)); 
+  I2C2->CR2 |= (1 << 16) | (0x69 << 1); 
+  I2C2->CR2 |= I2C_CR2_RD_WRN; // READ mode
   I2C2->CR2 |= I2C_CR2_START;
-
   
-  while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF))) {}
-  /*
-  // 7. Wait until the TC (Transfer Complete) flag is set
-  while (!(I2C2->ISR & I2C_ISR_TC)) {}
-*/
   // 8. Read the contents of the RXDR register
+  while (!(I2C2->ISR & (I2C_ISR_RXNE | I2C_ISR_NACKF))) {}
   volatile uint8_t who_am_i = I2C2->RXDR;
   while (!(I2C2->ISR & I2C_ISR_TC)) {}
   I2C2->CR2 |= I2C_CR2_STOP;
@@ -125,7 +101,7 @@ int main(void)
 
     // Clear LEDs and apply threshold to ignore noise [cite: 495]
     GPIOC->ODR &= ~((1 << 6) | (1 << 7) | (1 << 8) | (1 << 9));
-    int threshold = 500; 
+    int threshold = 1000; 
 
     // Map axes to specific LEDs per board orientation [cite: 496, 497]
     if (x_val > threshold)       GPIOC->ODR |= (1 << 8); // Orange (Positive X)
