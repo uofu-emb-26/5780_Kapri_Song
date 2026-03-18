@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+void ADC_Calibration(void);
 void Error_Handler(void);
 
 #ifdef __cplusplus
