@@ -101,7 +101,7 @@ int main(void)
 
     // Clear LEDs and apply threshold to ignore noise [cite: 495]
     GPIOC->ODR &= ~((1 << 6) | (1 << 7) | (1 << 8) | (1 << 9));
-    int threshold = 1000; 
+    int threshold = 1000;
 
     // Map axes to specific LEDs per board orientation [cite: 496, 497]
     if (x_val > threshold)       GPIOC->ODR |= (1 << 8); // Orange (Positive X)

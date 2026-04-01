@@ -11,5 +11,9 @@
         "starm-clangd",
         "--query-driver=${env:CUBE_BUNDLE_PATH}/gnu-tools-for-stm32/14.3.1+st.2/bin/arm-none-eabi-gcc",
         "--query-driver=${env:CUBE_BUNDLE_PATH}/gnu-tools-for-stm32/14.3.1+st.2/bin/arm-none-eabi-g++"
-    ]
+    ],
+    "cortex-debug.gdbPath": "/home/u1480819/.local/share/stm32cube/bundles/gnu-tools-for-stm32/14.3.1+st.2/bin/arm-none-eabi-gdb",
+    "cortex-debug.armToolchainPath": "home/u1480819/.local/share/stm32cube/bundles/gnu-tools-for-stm32/14.2.1+st.2/bin",
+    "cortex-debug.openocdPath": "/usr/local/bin/openocd"
+
 }

@@ -1,24 +1,72 @@
-#include "main.h"
-#include "stm32f0xx_hal.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "stm32f0xx.h"
+#include "motor.h"
+#include "SEGGER_RTT.h"
 
-void SystemClock_Config(void);
+volatile uint32_t debouncer;
 
-/**
-  * @brief  The application entry point.
-  * @retval int
-  */
-int main(void)
-{
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
-  /* Configure the system clock */
-  SystemClock_Config();
+void LED_init(void) {
+  RCC->AHBENR |= RCC_AHBENR_GPIOCEN;
 
-  while (1)
-  {
- 
+  GPIOC->MODER |= GPIO_MODER_MODER8_0 | GPIO_MODER_MODER9_0;
+  GPIOC->OTYPER &= ~(GPIO_OTYPER_OT_8 | GPIO_OTYPER_OT_9);
+  GPIOC->OSPEEDR &= ~((GPIO_OSPEEDR_OSPEEDR8_0 | GPIO_OSPEEDR_OSPEEDR8_1) | 
+                      (GPIO_OSPEEDR_OSPEEDR9_0 | GPIO_OSPEEDR_OSPEEDR9_1));
+  GPIOC->PUPDR &= ~((GPIO_PUPDR_PUPDR8_0 | GPIO_PUPDR_PUPDR8_1) |
+                    (GPIO_PUPDR_PUPDR9_0 | GPIO_PUPDR_PUPDR9_1));
+  GPIOC->ODR &= ~(GPIO_ODR_8 | GPIO_ODR_9);
+}
+
+void button_init(void) {
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN;
+
+  GPIOA->MODER &= ~(GPIO_MODER_MODER0_0 | GPIO_MODER_MODER0_1);
+  GPIOC->OSPEEDR &= ~(GPIO_OSPEEDR0_0 | GPIO_OSPEEDR_OSPEEDR0_1);
+  GPIOC->PUPDR |= GPIO_PUPDR_PUPDR0_1;
+
+}
+
+void Lab7_Systick_Callback(void) {
+  debouncer = (debouncer >> 1);
+  if (GPIOA->IDR & (1 << 0)) {
+    debouncer |= 0x1;
   }
-  return -1;
+  if (debouncer == 0x7FFFFFFF) {
+    __disable_irq();
+    switch(target_rpm) {
+      case 80: 
+        target_rpm = 50;
+        break;
+      case 50:
+        target_rpm = 81;
+        break;
+      case 0: 
+        target_rpm = 80;
+        break;
+      default: 
+        target_rpm = 0;
+        break;
+    }
+    __enable_irq();
+  }
+}
+
+volatile uint32_t encoder_count = 0;
+
+int main(void) {
+  debouncer = 0;
+  HAL_Init();
+  LED_init();
+  button_init();
+  motor_init();
+
+  while (1) {
+    GPIOC->ODR ^= GPIO_ODR_9;
+    encoder_count = TIM2->CNT;
+    HAL_Delay(128);
+  }
+
 }
 
 /**

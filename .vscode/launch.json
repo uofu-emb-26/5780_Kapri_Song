@@ -20,17 +20,18 @@
         },
         {
             "cwd": "${workspaceRoot}",
-            "executable": "${command:cmake.launchTargetPath}",
+            "executable": "${workspaceFolder}/build/lab7/lab7.elf",
             "name": "RTT graphing",
             "request": "launch",
             "type": "cortex-debug",
+            "openOCDLaunchCommands": [],
             "servertype": "openocd",
             "configFiles": [
                 "board/stm32f0discovery.cfg"
             ],
             "runToEntryPoint": "main",
-            "showDevDebugOutput": "none",
-            "svdPath": "STM32F072x.svd",
+            "showDevDebugOutput": "raw",
+            "svdPath": "${workspaceRoot}/STM32F0x2.svd",
             "rttConfig": {
                 "enabled": true,
                 "address": "auto",
@@ -61,17 +62,13 @@
                     }
                 ]
             },
-            "preLaunchTask": {
-                "type": "PlatformIO",
-                "task": "Pre-Debug (lab1)"
-            },
             "graphConfig": [
                 {
                     "label": "Graph 1",
-                    "timespan": 5,
+                    "timespan": 1,
                     "type": "realtime",
                     "annotate": false,
-                    "maximum": 256,
+                    "maximum": 120,
                     "minimum": 0,
                     "plots": [
                         {
