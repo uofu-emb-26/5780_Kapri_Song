@@ -13,7 +13,7 @@ volatile int16_t motor_speed;
 volatile int8_t adc_value;
 volatile int16_t error;
 volatile uint8_t Kp = 150;
-volatile uint8_t Ki = 3;
+volatile uint8_t Ki = 8;
 
 static uint8_t buf0[1024];
 static uint8_t buf1[1024];
