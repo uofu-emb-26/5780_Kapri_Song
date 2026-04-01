@@ -12,8 +12,8 @@ volatile int16_t target_rpm;
 volatile int16_t motor_speed;
 volatile int8_t adc_value;
 volatile int16_t error;
-volatile uint8_t Kp;
-volatile uint8_t Ki;
+volatile uint8_t Kp = 150;
+volatile uint8_t Ki = 3;
 
 static uint8_t buf0[1024];
 static uint8_t buf1[1024];
